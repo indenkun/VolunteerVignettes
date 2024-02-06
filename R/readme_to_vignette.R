@@ -3,14 +3,14 @@
 #' While many package lack vignettes, they often contain useful information in
 #' the form of a `README.Rmd` file which could in theory form a first draft of a
 #' vignette. This function attempts to convert the `README.Rmd` file into a
-#' passable vignette, leveraging the same internals as [use_vignette()]. Once
+#' passable vignette, leveraging the same internals as [usethis::use_vignette()]. Once
 #' created, an attempt is made to open the file for further editing.
 #'
 #' This is not guaranteed to create a complete vignette ready to be knit, it
 #' just does the easy part. Relative file paths will still need to be updated.
 #'
 #' In order to perform the conversion from outside of the active project use
-#' [proj_set()] first to set the active project.
+#' [usethis::proj_set()] first to set the active project.
 #'
 #' @param vignette_aut The intended author of the README/vignette. If not
 #'   provided, an attempt will be made to extract it from the package's
@@ -36,22 +36,22 @@ README_to_vignette <- function(vignette_aut = NULL,
 
   check_is_package("README_to_vignette()")
 
-  readme_file <- file.path(proj_get(), "README.Rmd")
+  readme_file <- file.path(usethis::proj_get(), "README.Rmd")
   if (!file.exists(readme_file)) stop("No README.Rmd to convert")
   readme_content <- readLines(readme_file)
 
-  check_installed("rmarkdown")
+  rlang::check_installed("rmarkdown")
   use_dependency("knitr", "Suggests")
-  use_description_field("VignetteBuilder", "knitr")
+  proj_desc_field_update("VignetteBuilder", "knitr", overwrite = TRUE)
   use_dependency("rmarkdown", "Suggests")
-  use_directory("vignettes")
-  use_git_ignore(c("*.html", "*.R"), directory = "vignettes")
-  use_git_ignore("inst/doc")
-  path <- file.path("vignettes", slug(vignette_slug, ".Rmd"))
+  usethis::use_directory("vignettes")
+  usethis::use_git_ignore(c("*.html", "*.R"), directory = "vignettes")
+  usethis::use_git_ignore("inst/doc")
+  path <- file.path("vignettes", fs::path_ext_set(vignette_slug, ".Rmd"))
   if (file.exists(path) && !overwrite) {
     stop(paste(path, "already exists. Use overwrite = TRUE to force rewrite."))
   }
-  done("Creating ", value(path))
+  usethis::ui_done("Creating {usethis::ui_value(path)}")
 
   ## identify yaml header if present
   readme_yaml_seps <- which(readme_content == "---")
@@ -64,7 +64,7 @@ README_to_vignette <- function(vignette_aut = NULL,
   }
 
   ## read plausible author from DESCRIPTION
-  desc_file = file.path(proj_get(), "DESCRIPTION")
+  desc_file = file.path(usethis::proj_get(), "DESCRIPTION")
   if (is.null(vignette_aut)) {
     descrip_aut <- desc::desc_get_author("aut", file = desc_file)[1]
     if (!is.null(descrip_aut)) {
@@ -108,11 +108,18 @@ knitr::opts_chunk$set(
   if (!has_config) vignette_header <- paste0(vignette_header, vignette_settings, collapse = "\n")
 
   ## write the vignette
-  write_utf8(
-    file.path(proj_get(), path),
-    paste0(vignette_header, paste0(readme_content, collapse = "\n"), collapse = "")
+  usethis::write_over(
+    file.path(usethis::proj_get(), path),
+    paste0(vignette_header, paste0(readme_content, collapse = "\n"), collapse = ""),
+    quiet = TRUE
   )
 
-  edit_file(proj_path(path))
+  usethis::edit_file(usethis::proj_path(path))
 
 }
+
+#
+
+check_is_package <- utils::getFromNamespace("check_is_package", "usethis")
+use_dependency <- utils::getFromNamespace("use_dependency", "usethis")
+proj_desc_field_update <- utils::getFromNamespace("proj_desc_field_update", "usethis")

@@ -1,0 +1,20 @@
+Package: VolunteerVignettes
+Title: README.Rmd file into vignettes
+Version: 0.0.0.9000
+Authors@R: 
+    c(person(given = "Jonathan", family = "Carroll",
+             role = "aut"),
+      person(given = "Mao", family = "Kobayashi",
+             email = "kobamao.jp@gmail.com", role = "cre"))
+Description: Convert an existing README.Rmd file into a vignette.
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Imports: 
+    desc,
+    fs,
+    rlang,
+    usethis,
+    utils
